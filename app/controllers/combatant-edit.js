@@ -9,14 +9,22 @@ export default Controller.extend({
         return [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ];
     }.property(),
     
+    passengerTypes: function() {
+      return [ 'pilot', 'passenger', 'none' ];
+    }.property(),
+    
     actions: {
         save: function() {
-            let api = this.get('gameApi');
+            let api = this.gameApi;
             api.requestOne('updateCombatant', { id: this.get('model.id'), 
                 team: this.get('model.team'),
                 stance: this.get('model.stance'),
                 weapon: this.get('model.weapon'),
                 armor: this.get('model.armor'),
+                vehicle: this.get('model.vehicle'),
+                passenger_type: this.get('model.passenger_type'),
+                action: this.get('model.action'),
+                action_args: this.get('model.action_args'),
                 npc_skill: this.get('model.npc_skill'),
                 weapon_specials: this.get('model.weapon_specials') || [],
                 armor_specials: this.get('model.armor_specials') || []
@@ -26,7 +34,7 @@ export default Controller.extend({
                     return;
                 }
                 this.transitionToRoute('combat', this.get('model.combat'));
-                this.get('flashMessages').success('Combatant saved!');
+                this.flashMessages.success('Combatant saved!');
             });
         },
         teamChanged: function(team) {
@@ -43,6 +51,13 @@ export default Controller.extend({
         },
         npcChanged: function(npc) {
             this.set('model.npc_skill', npc);
+        },
+        passengerTypeChanged: function(type) {
+          this.set('model.passenger_type', type);
+        },
+        actionChanged: function(action) {
+            this.set('model.action', action);
+            this.set('model.action_args', '');
         },
     }
 });
