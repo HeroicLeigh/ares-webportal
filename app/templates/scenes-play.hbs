@@ -8,7 +8,7 @@
      <button class="btn btn-default visible-sm visible-xs hidden-md" type="button" data-toggle="collapse" data-target="#sceneMenuCollapse" aria-expanded="false" aria-controls="sceneMenuCollapse">
          <i class="fas fa-bars"></i>
          {{#if anyNewActivity}}
-         <span class="label label-pill label-primary"> <i class="fa fa-flag" aria-hidden="true"></i></span>
+         <span class="label label-pill label-primary"> <i class="fa fa-flag" aria-label="New Activity"></i></span>
          {{/if}}
        </button>
 
@@ -20,12 +20,12 @@
             class="btn btn-default chat-button {{if (eq scene.id currentScene.id) 'chat-button-active' ''}}">
            #{{scene.id}} - {{scene.location.name}} 
            {{#if scene.is_unread}}
-             <span class="label label-pill label-primary"> <i class="fa fa-flag" aria-hidden="true"></i></span>
+             <span class="label label-pill label-primary"> <i class="fa fa-flag" aria-label="New Activity"></i></span>
            {{/if}}
            
            <p>
-             {{#each scene.participants as |p|}}
-               {{p.name}}
+             {{#each scene.participants as |participant|}}
+               {{participant.name}}
              {{/each}}
            </p>
            </button>
@@ -51,7 +51,7 @@
 
       {{live-scene-context scene=currentScene}}
     
-       {{live-scene-control scene=currentScene locations=model.locations abilities=model.abilities scrollPaused=scrollPaused playerName=currentUser.name refresh=(action "refresh") scrollScene=(action "scrollScene") setScroll=(action "setScroll")}}
+       {{live-scene-control scene=currentScene locations=model.locations abilities=model.abilities places=currentScene.places scrollPaused=scrollPaused playerName=currentUser.name refresh=(action "refresh") scrollScene=(action "scrollScene") setScroll=(action "setScroll")}}
        
 
     </div>

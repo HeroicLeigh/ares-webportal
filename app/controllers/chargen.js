@@ -1,26 +1,17 @@
 import Controller from '@ember/controller';
 import { inject as service } from '@ember/service';
-import FS3Chargen from 'ares-webportal/mixins/fs3-chargen';
 
-export default Controller.extend(FS3Chargen, {    
+export default Controller.extend({    
     flashMessages: service(),
     gameApi: service(),
     charErrors: [],
     toggleCharChange: false,
-    
-    alerts: function() {
-        return this.get('charErrors');
-    }.property('toggleCharChange'),
+    fs3Data: {},
     
     genders: function() {
         return [ { value: 'Male' }, { value: 'Female' }, { value: 'Other' }];
     }.property(),
 
-    showCharErrors: function() {
-        return this.get('alerts').length > 0;
-    }.property('alerts'),
-
-    
     anyGroupMissing: function() {
         let groups = this.get('model.char.groups');
         let anyMissing = false;
@@ -42,43 +33,36 @@ export default Controller.extend(FS3Chargen, {
             desc: this.get('model.char.desc'),
             shortdesc: this.get('model.char.shortdesc'),
             rp_hooks: this.get('model.char.rp_hooks'),
+            profile_image: this.get('model.char.profile_image'),
             background: this.get('model.char.background'),
             lastwill: this.get('model.char.lastwill'),
-            fs3: this.buildFs3QueryData()
+            fs3: this.fs3Data
         };
     }, 
     
     
     toggleCharChanged: function() {
-        this.set('toggleCharChange', !this.get('toggleCharChange'));        
+        this.set('toggleCharChange', !this.toggleCharChange);        
     },
     
     actions: {
         
         genderChanged(val) {
-            this.set('model.char.demographics.gender.value', val.value);
-            this.validateChar();
+           this.set('model.char.demographics.gender.value', val.value);
         },
         
         groupChanged(group, val) {
             this.set(`model.char.groups.${group}`, val);
-            this.validateChar();
         },
         
-        reset() {
-            let api = this.get('gameApi');
-            api.requestOne('chargenReset', { char: this.buildQueryDataForChar() })
-            .then( (response) => {
-                if (response.error) {
-                    return;
-                }
-                this.send('reloadModel');
-                this.flashMessages.success('Abilities reset.');
-            });    
+        fileUploaded(folder, name) {
+          folder = folder.toLowerCase();
+          name = name.toLowerCase();
+          this.set('model.char.profile_image', `${folder}/${name}`);
         },
         
         review() {
-            let api = this.get('gameApi');
+            let api = this.gameApi;
             api.requestOne('chargenSave', { char: this.buildQueryDataForChar() })
             .then( (response) => {
                 if (response.error) {
@@ -88,23 +72,34 @@ export default Controller.extend(FS3Chargen, {
             });   
         },
         
+        reset() {
+          let api = this.gameApi;
+          api.requestOne('chargenReset', { char: this.buildQueryDataForChar() })
+          .then( (response) => {
+            if (response.error) {
+              return;
+            }
+            this.send('reloadModel');
+            this.flashMessages.success('Abilities reset.');
+          });    
+        },
+        
         save() {
-            let api = this.get('gameApi');
+            let api = this.gameApi;
             api.requestOne('chargenSave', { char: this.buildQueryDataForChar() })
             .then( (response) => {
                 if (response.error) {
                     return;
                 }
-                this.validateChar();
                 if (response.alerts) {
-                    response.alerts.forEach( r => this.charErrors.push(r) );
+                  response.alerts.forEach( r => this.charErrors.pushObject(r) );
                 }
                 this.flashMessages.success('Saved!');
             }); 
         },
         
         unsubmit() {
-            let api = this.get('gameApi');
+            let api = this.gameApi;
             api.requestOne('chargenUnsubmit')
             .then( (response) => {
                 if (response.error) {

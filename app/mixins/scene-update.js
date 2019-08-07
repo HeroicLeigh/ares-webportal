@@ -1,3 +1,4 @@
+import { set } from '@ember/object';
 import Mixin from '@ember/object/mixin';
 import { inject as service } from '@ember/service';
 
@@ -23,14 +24,14 @@ export default Mixin.create({
         poseData.can_delete = true;
       }
       poses.pushObject(poseData);
-      scene.set('pose_order', poseData.pose_order);
+      scene.get('pose_order').setObjects(poseData.pose_order);
     } else if (activityType == 'pose_updated') {
       let poseData = JSON.parse(activityData);
       let poses = scene.get('poses');
       poses.forEach((p) => {
         if (p.id === poseData.id) {
-          Ember.set(p, 'pose', poseData.pose);
-          Ember.set(p, 'raw_pose', poseData.raw_pose);
+          set(p, 'pose', poseData.pose);
+          set(p, 'raw_pose', poseData.raw_pose);
         }
       });
       notify = false;
