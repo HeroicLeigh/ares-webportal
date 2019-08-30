@@ -14,18 +14,18 @@ export default Component.extend(AuthenticatedController, {
     flashMessages: service(),
     gameSocket: service(),
     session: service(),
-  
+
     scenePoses: function() {
-        return this.get('scene.poses').map(p => EmberObject.create(p));  
+        return this.get('scene.poses').map(p => EmberObject.create(p));
     }.property('scene.poses.@each.pose'),
-      
-    actions: { 
+
+    actions: {
       locationSelected(loc) {
-          this.set('newLocation', loc);  
+          this.set('newLocation', loc);
       },
       changeLocation() {
           let api = this.gameApi;
-          
+
           let newLoc = this.newLocation;
           if (!newLoc) {
               this.flashMessages.danger("You haven't selected a location.");
@@ -42,8 +42,8 @@ export default Component.extend(AuthenticatedController, {
               }
           });
       },
-      
-      editScenePose(scenePose) { 
+
+      editScenePose(scenePose) {
           scenePose.set('editActive', true);
       },
       cancelScenePoseEdit(scenePose) {
@@ -75,7 +75,7 @@ export default Component.extend(AuthenticatedController, {
                 return;
             }
             this.flashMessages.success('The scene has been deleted.');
-            this.sendAction('refresh'); 
+            this.sendAction('refresh');
         });
       },
       saveScenePose(scenePose, notify) {
@@ -98,7 +98,7 @@ export default Component.extend(AuthenticatedController, {
           });
           this.set('scenePose', '');
       },
-      
+
       addPose(poseType) {
           let pose = this.scenePose;
           if (pose.length === 0) {
@@ -116,14 +116,14 @@ export default Component.extend(AuthenticatedController, {
               this.sendAction('scrollScene');
           });
       },
-      
+
       changeSceneStatus(status) {
           let api = this.gameApi;
           if (status === 'share') {
             this.gameSocket.removeCallback('new_scene_activity');
           }
           this.set('scene.reload_required', true);
-          
+
           api.requestOne('changeSceneStatus', { id: this.get('scene.id'),
               status: status }, null)
           .then( (response) => {
@@ -135,15 +135,15 @@ export default Component.extend(AuthenticatedController, {
               }
               else if (status === 'stop') {
                   this.flashMessages.success('The scene has been stopped.');
-                  this.sendAction('refresh'); 
+                  this.sendAction('refresh');
               }
               else if (status === 'restart') {
                   this.flashMessages.success('The scene has been restarted.');
-                  this.sendAction('refresh'); 
+                  this.sendAction('refresh');
               }
           });
       },
-      
+
       watchScene(option) {
           let api = this.gameApi;
           let command = option ? 'watchScene' : 'unwatchScene';
@@ -155,17 +155,27 @@ export default Component.extend(AuthenticatedController, {
               let message = option ? 'now watching' : 'no longer watching';
               this.flashMessages.success(`You are ${message} the scene.`);
               this.scene.set('is_watching', option);
-              
+
               if (option) {
-                this.sendAction('refresh'); 
+                this.sendAction('refresh');
               }
           });
       },
-      
+      cookies(sceneId) {
+        let api = this.get('gameApi');
+        api.requestOne('sceneCookies', { id: this.get('scene.id') }, null)
+        .then( (response) => {
+            if (response.error) {
+                return;
+              }
+            this.get('flashMessages').success('You give cookies to the scene participants.');
+        });
+      },
+
       scrollDown() {
         this.sendAction('scrollScene');
       },
-      
+
       pauseScroll() {
         this.sendAction('setScroll', false);
       },
