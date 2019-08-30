@@ -5,15 +5,15 @@ import { inject as service } from '@ember/service';
 export default Controller.extend(AuthenticatedController, {
     gameApi: service(),
     confirmDelete: false,
-    
+
     pageTitle: function() {
         return `${this.get('model.icdate')} - ${this.get('model.title')}`
     }.property(),
-    
+
     resetOnExit: function() {
       this.set('confirmDelete', false);
     },
-    
+
     actions: {
         like(like) {
             let api = this.gameApi;
@@ -25,7 +25,18 @@ export default Controller.extend(AuthenticatedController, {
                 this.send('reloadModel');
             });
         },
-        
+
+        cookies(sceneId) {
+          let api = this.get('gameApi');
+          api.requestOne('sceneCookies', { id: this.get('model.id') }, null)
+          .then( (response) => {
+            if (response.error) {
+                return;
+            }
+            this.get('flashMessages').success('You give cookies to the scene participants.');
+          });
+        },
+
         delete() {
             let api = this.gameApi;
             this.set('confirmDelete', false);
@@ -38,7 +49,7 @@ export default Controller.extend(AuthenticatedController, {
                 this.flashMessages.success('Scene deleted!');
             });
         },
-        
+
         unshareScene() {
             let api = this.gameApi;
             api.requestOne('changeSceneStatus', { id: this.get('model.id'),
